@@ -29,7 +29,7 @@ describe('Register Demo Page',function() {
     browser.get('https://demo.nopcommerce.com/register?returnUrl=%2F')
   });
   
-  it('Should register',function(){
+  it('77: Should register',function(){
 
     args.firstName = 'jovan';
     args.lastName = 'jovan';
@@ -49,7 +49,7 @@ describe('Register Demo Page',function() {
 
 
 
-  it('Should not register because email is the same',function(){
+  it('125: Should not register because email is the same',function(){
 
     browser.wait(EC.presenceOf(registerPage.registerButton,15000))
 
@@ -60,7 +60,7 @@ describe('Register Demo Page',function() {
     expect($("div[class='message-error validation-summary-errors'] ul li").getText()).toEqual('The specified email already exists');
   })
 
-  it('Should not register because passwords do not match',function(){
+  it('127: Should not register because passwords do not match',function(){
 
     args.confirmPassword = 'test1234'
 
@@ -73,21 +73,28 @@ describe('Register Demo Page',function() {
     expect($("span[id='ConfirmPassword-error']").getText()).toEqual('The password and confirmation password do not match.');
   })
 
-  it('Should not register because firstName field is empty',function(){
+  fit('133: Should not register because required fields are empty',async function(){
 
-    // let reqFields = ['firstName,lastName,email,password,confirmPassword']
+    let reqFields = ['firstName','lastName','email','password']
+    let errorFields = ['FirstName-error','LastName-error','Email-error','ConfirmPassword-error']
 
     args.confirmPassword = args.password;
 
-    args.firstName = ''
+    for(let i=0, length=reqFields.length;i<length;i++){
+      args[reqFields[i]]='';
 
-    browser.wait(EC.presenceOf(registerPage.registerButton,15000))
+      browser.wait(EC.presenceOf(registerPage.registerButton,15000))
+      registerPage.testRegister(args)
 
-    registerPage.testRegister(args)
-
-    browser.wait(EC.presenceOf($("span[id='FirstName-error']")),15000);
-
-    expect($("span[id='FirstName-error']").getText()).toEqual('First name is required.');
+      browser.wait(EC.presenceOf($(`span[id="${errorFields[i]}"]`)),15000);
+      let lengthOfError = $(`span[id="${errorFields[i]}"]`).getText()
+        .then(function(errorText){
+          return errorText.length
+        })
+        console.log(lengthOfError)
+      expect(lengthOfError).toBeGreaterThan(2);
+      await browser.get('https://demo.nopcommerce.com/register');
+    }
 
   })
 
